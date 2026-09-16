@@ -141,15 +141,16 @@ export default function App() {
       return
     }
     if (missed.length > 0) {
+      const reshuffled = shuffle(missed)
       setPhase('round2')
-      setQueue(shuffle(missed))
+      setQueue(reshuffled)
       setIndex(0)
       setAttempts(0)
       setFeedback(null)
       setAnswerText('')
       setShowText(false)
       setAvatarState('listening')
-      const first = missed[0]
+      const first = reshuffled[0]
       if (first) window.setTimeout(() => sayDefinition(first), 350)
     } else {
       finishGame()
@@ -186,13 +187,15 @@ export default function App() {
   }
 
   function startRound(items: VocabularyItem[]) {
-    setQueue(shuffle(items))
+    const shuffled = shuffle(items)
+    setQueue(shuffled)
     setIndex(0)
     setAttempts(0)
     setFeedback(null)
+    setAnswerText('')
     setShowText(false)
     setAvatarState('listening')
-    const first = items[0]
+    const first = shuffled[0]
     if (first) window.setTimeout(() => sayDefinition(first), 350)
   }
 
