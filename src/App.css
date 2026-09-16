@@ -116,32 +116,175 @@
   overflow: visible;
 }
 
-.avatar__mouth {
-  animation: talk 0.9s ease-in-out infinite;
+.avatar__body {
+  transform-box: fill-box;
   transform-origin: center;
+  animation: avatar-bob 4.5s ease-in-out infinite;
 }
 
-@keyframes talk {
+.avatar--speaking .avatar__body {
+  animation-duration: 1.2s;
+}
+
+@keyframes avatar-bob {
   0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.avatar__shadow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: avatar-shadow 4.5s ease-in-out infinite;
+}
+
+.avatar--speaking .avatar__shadow {
+  animation-duration: 1.2s;
+}
+
+@keyframes avatar-shadow {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+}
+
+.avatar__blink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: avatar-blink 4.2s ease-in-out infinite;
+}
+
+@keyframes avatar-blink {
+  0%,
+  90%,
   100% {
     transform: scaleY(1);
   }
-  50% {
-    transform: scaleY(0.55);
+  93% {
+    transform: scaleY(0.08);
+  }
+  96% {
+    transform: scaleY(1);
   }
 }
 
-.avatar__listening-waves {
-  animation: pulse 1.4s ease-in-out infinite;
+.avatar__ears {
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
-@keyframes pulse {
+.avatar--speaking .avatar__ears,
+.avatar--listening .avatar__ears {
+  animation: avatar-ears 1.8s ease-in-out infinite;
+}
+
+@keyframes avatar-ears {
   0%,
   100% {
-    opacity: 0.2;
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-1.5deg);
+  }
+  75% {
+    transform: rotate(1.5deg);
+  }
+}
+
+.avatar__ahoge {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: avatar-sway 3.2s ease-in-out infinite;
+}
+
+@keyframes avatar-sway {
+  0%,
+  100% {
+    transform: rotate(-7deg);
   }
   50% {
-    opacity: 0.8;
+    transform: rotate(9deg);
+  }
+}
+
+.avatar__mouth-talk {
+  transform-box: fill-box;
+  transform-origin: 50% 15%;
+  animation: avatar-talk 0.28s ease-in-out infinite alternate;
+}
+
+@keyframes avatar-talk {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0.25);
+  }
+}
+
+.avatar__rings circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: avatar-ring 2s ease-out infinite;
+}
+
+.avatar__rings circle:nth-child(2) {
+  animation-delay: 0.66s;
+}
+
+.avatar__rings circle:nth-child(3) {
+  animation-delay: 1.32s;
+}
+
+@keyframes avatar-ring {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+
+.avatar__dots circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: avatar-dot 1.4s ease-in-out infinite;
+}
+
+.avatar__dots circle:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.avatar__dots circle:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes avatar-dot {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar * {
+    animation: none !important;
   }
 }
 

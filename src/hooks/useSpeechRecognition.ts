@@ -4,9 +4,7 @@ export type RecognitionError =
   | 'not-allowed'
   | 'no-speech'
   | 'network'
-  | 'aborted'
   | 'unsupported'
-  | 'other'
 
 interface UseSpeechRecognition {
   supported: boolean
@@ -94,10 +92,6 @@ export function useSpeechRecognition(
           setError('no-speech')
         } else if (err === 'network') {
           setError('network')
-        } else if (err === 'aborted') {
-          setError('aborted')
-        } else {
-          setError('other')
         }
       }
       rec.onend = () => setListening(false)
@@ -107,7 +101,6 @@ export function useSpeechRecognition(
       rec.start()
       setListening(true)
     } catch {
-      setError('other')
       setListening(false)
     }
   }, [])

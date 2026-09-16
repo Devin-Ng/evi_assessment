@@ -43,10 +43,10 @@ export default function App() {
   const [newBest, setNewBest] = useState(false)
   const [muted, setMuted] = useState(false)
   const [showText, setShowText] = useState(false)
+  const [answerText, setAnswerText] = useState('')
   const [avatarState, setAvatarState] = useState<AvatarMood>('idle')
 
   const advanceTimer = useRef<number | null>(null)
-  const autoSubmitted = useRef(false)
   const current = queue[index]
 
   const clearAdvanceTimer = () => {
@@ -58,15 +58,16 @@ export default function App() {
 
   const { supported: asrSupported, listening, transcript, error, start, stop, reset } =
     useSpeechRecognition(handleFinalTranscript)
-  const { speak, stop: stopSpeaking, supported: ttsSupported } = useSpeechSynthesis(muted)
+  const { supported: ttsSupported, speak, stop: stopSpeaking } = useSpeechSynthesis(muted)
+
+  const canTalk = ttsSupported && !muted
 
   const sayDefinition = useCallback(
     (item: VocabularyItem) => {
-      setAvatarState('speaking')
-      speak(item.definition)
-      window.setTimeout(() => setAvatarState('idle'), 900)
+      if (canTalk) setAvatarState('speaking')
+      speak(item.definition, 0.95, () => setAvatarState('idle'))
     },
-    [speak],
+    [speak, canTalk],
   )
 
   function submitAnswer(raw: string) {
@@ -91,7 +92,9 @@ export default function App() {
       setCorrectCount((c) => c + 1)
       setFeedback({ tier, input: raw })
       setAvatarState('speaking')
-      speak(`Correct! ${current.word}. ${current.exampleSentence}`)
+      speak(`Correct! ${current.word}. ${current.exampleSentence}`, 0.95, () =>
+        setAvatarState('idle'),
+      )
       advanceTimer.current = window.setTimeout(() => {
         clearAdvanceTimer()
         advance()
@@ -111,16 +114,15 @@ export default function App() {
   function handleFinalTranscript(text: string) {
     if (phase !== 'round1' && phase !== 'round2') return
     if (feedback !== null) return
-    if (autoSubmitted.current) return
-    autoSubmitted.current = true
-    submitAnswer(text)
+    const heard = text.trim()
+    if (heard) setAnswerText(heard)
   }
 
   function advance() {
     clearAdvanceTimer()
     setFeedback(null)
     setAttempts(0)
-    autoSubmitted.current = false
+    setAnswerText('')
     setShowText(false)
     setAvatarState('listening')
     const next = index + 1
@@ -144,6 +146,7 @@ export default function App() {
       setIndex(0)
       setAttempts(0)
       setFeedback(null)
+      setAnswerText('')
       setShowText(false)
       setAvatarState('listening')
       const first = missed[0]
@@ -196,7 +199,7 @@ export default function App() {
   function handleRetry() {
     clearAdvanceTimer()
     setFeedback(null)
-    autoSubmitted.current = false
+    setAnswerText('')
     setShowText(false)
     if (current) {
       setAvatarState('listening')
@@ -217,12 +220,13 @@ export default function App() {
   function handleToggleMic() {
     if (listening) {
       stop()
+      const heard = transcript.trim()
+      if (heard) setAnswerText(heard)
       return
     }
     stopSpeaking()
     reset()
     setFeedback(null)
-    autoSubmitted.current = false
     setAvatarState('listening')
     start()
   }
@@ -230,6 +234,7 @@ export default function App() {
   function handleSubmit(text: string) {
     if (listening) stop()
     submitAnswer(text)
+    setAnswerText('')
   }
 
   useEffect(
@@ -333,6 +338,8 @@ export default function App() {
           listening={listening}
           transcript={transcript}
           error={error}
+          value={answerText}
+          onChangeText={setAnswerText}
           onToggleMic={handleToggleMic}
           onSubmit={handleSubmit}
           disabled={listening}
@@ -347,9 +354,8 @@ export default function App() {
           onNext={handleNext}
           onSkip={handleSkip}
           onSpeakWord={() => {
-            setAvatarState('speaking')
-            speak(current.word)
-            window.setTimeout(() => setAvatarState('idle'), 900)
+            if (canTalk) setAvatarState('speaking')
+            speak(current.word, 0.95, () => setAvatarState('idle'))
           }}
           onSpeakDefinition={() => sayDefinition(current)}
           ttsSupported={ttsSupported}

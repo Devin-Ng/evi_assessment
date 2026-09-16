@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import type { RecognitionError } from '../hooks/useSpeechRecognition'
 
 interface AnswerInputProps {
@@ -6,6 +5,8 @@ interface AnswerInputProps {
   listening: boolean
   transcript: string
   error: RecognitionError | null
+  value: string
+  onChangeText: (text: string) => void
   onToggleMic: () => void
   onSubmit: (text: string) => void
   disabled?: boolean
@@ -21,10 +22,8 @@ function errorMessage(error: RecognitionError | null): string | null {
       return 'Speech recognition hit a network error. Type below, or try the mic again.'
     case 'unsupported':
       return 'This browser does not support speech recognition. Type your answer below.'
-    case 'aborted':
-      return null
     default:
-      return 'Something went wrong with the microphone. Type below, or try the mic again.'
+      return null
   }
 }
 
@@ -33,20 +32,20 @@ export function AnswerInput({
   listening,
   transcript,
   error,
+  value,
+  onChangeText,
   onToggleMic,
   onSubmit,
   disabled = false,
 }: AnswerInputProps) {
-  const [text, setText] = useState('')
   const micError = errorMessage(error)
-  const value = listening ? transcript : text
+  const shown = listening ? transcript : value
 
   const handleSubmit = () => {
     if (disabled) return
-    const value = text.trim()
-    if (!value) return
-    onSubmit(value)
-    setText('')
+    const trimmed = value.trim()
+    if (!trimmed) return
+    onSubmit(trimmed)
   }
 
   return (
@@ -58,7 +57,7 @@ export function AnswerInput({
             className={`mic-btn ${listening ? 'mic-btn--listening' : ''}`}
             onClick={onToggleMic}
             aria-label={listening ? 'Stop recording' : 'Speak your answer'}
-            disabled={disabled}
+            disabled={disabled && !listening}
           >
             {listening ? '\u23F9' : '\u{1F3A4}'}
           </button>
@@ -72,9 +71,9 @@ export function AnswerInput({
         <div className="answer-card__field">
           <input
             type="text"
-            value={value}
+            value={shown}
             placeholder={'Type the word\u2026'}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => onChangeText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleSubmit()
             }}
@@ -92,26 +91,20 @@ export function AnswerInput({
           {!listening && micError && (
             <div className="listening-hint listening-hint--error">{micError}</div>
           )}
-          {!listening && error === 'aborted' && (
-            <div className="listening-hint">
-              Recording stopped. Press Submit to check your answer, or try the
-              mic again.
-            </div>
-          )}
         </div>
 
         <button
           type="button"
           className="primary-btn"
           onClick={handleSubmit}
-          disabled={disabled || listening || !text.trim()}
+          disabled={disabled || listening || !value.trim()}
         >
           Submit
         </button>
       </div>
       <p className="answer-card__tip">
-        Tap the mic and say the word, or type it. Your answer decides what
-        happens next.
+        Tap the mic and say the word &mdash; I&apos;ll drop it in the box for
+        you to check. Press Submit when it looks right.
       </p>
     </section>
   )
