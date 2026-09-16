@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import './App.css'
 import { AvatarFace } from './components/AvatarFace'
 import { AnswerInput } from './components/AnswerInput'
@@ -46,15 +46,7 @@ export default function App() {
   const [answerText, setAnswerText] = useState('')
   const [avatarState, setAvatarState] = useState<AvatarMood>('idle')
 
-  const advanceTimer = useRef<number | null>(null)
   const current = queue[index]
-
-  const clearAdvanceTimer = () => {
-    if (advanceTimer.current !== null) {
-      window.clearTimeout(advanceTimer.current)
-      advanceTimer.current = null
-    }
-  }
 
   const { supported: asrSupported, listening, transcript, error, start, stop, reset } =
     useSpeechRecognition(handleFinalTranscript)
@@ -71,7 +63,6 @@ export default function App() {
   )
 
   function submitAnswer(raw: string) {
-    clearAdvanceTimer()
     stopSpeaking()
     if (!current) return
 
@@ -95,10 +86,6 @@ export default function App() {
       speak(`Correct! ${current.word}. ${current.exampleSentence}`, 0.95, () =>
         setAvatarState('idle'),
       )
-      advanceTimer.current = window.setTimeout(() => {
-        clearAdvanceTimer()
-        advance()
-      }, 5500)
     } else {
       const remainingAttempts = MAX_ATTEMPTS - (attempts + 1)
       setStreak(0)
@@ -119,7 +106,6 @@ export default function App() {
   }
 
   function advance() {
-    clearAdvanceTimer()
     setFeedback(null)
     setAttempts(0)
     setAnswerText('')
@@ -158,7 +144,6 @@ export default function App() {
   }
 
   function finishGame() {
-    clearAdvanceTimer()
     const finalScore = score
     const finalStreak = maxStreak
     const best = Math.max(bestScore, finalScore)
@@ -200,7 +185,6 @@ export default function App() {
   }
 
   function handleRetry() {
-    clearAdvanceTimer()
     setFeedback(null)
     setAnswerText('')
     setShowText(false)
@@ -239,13 +223,6 @@ export default function App() {
     submitAnswer(text)
     setAnswerText('')
   }
-
-  useEffect(
-    () => () => {
-      clearAdvanceTimer()
-    },
-    [],
-  )
 
   if (phase === 'intro') {
     return (
